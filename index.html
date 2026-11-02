@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Галактическая Осада III — Звёздный атлас</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,600;0,700;1,600&family=Jost:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap&subset=cyrillic,latin" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css?v=215311" />
+</head>
+<body>
+
+  <!-- ===== ФОН МЕНЮ: плавающие кляксы ===== -->
+  <div id="menuBlobs" aria-hidden="true">
+    <span class="blob blob-rose"></span>
+    <span class="blob blob-lavender"></span>
+    <span class="blob blob-mint"></span>
+    <span class="blob blob-amber"></span>
+    <span class="blob blob-indigo"></span>
+  </div>
+
+  <!-- ===== ИГРОВОЙ CANVAS ===== -->
+  <canvas id="gameCanvas" class="hidden" aria-label="Игровое поле"></canvas>
+
+  <!-- ===== ИГРОВОЙ HUD ===== -->
+  <div id="gameUI" class="hidden">
+    <div class="hud-top panel-strip">
+      <span id="systemName" class="hud-system">Система</span>
+      <span id="dmCounter" class="hud-counter dm" title="Тёмная материя">✦ 0</span>
+      <span id="planetsCounter" class="hud-counter" title="Планеты">⬤ 0/0</span>
+      <span id="shipsCounter" class="hud-counter" title="Корабли">⛟ 0</span>
+      <span class="hud-top-actions">
+        <button id="pauseBtn" class="icon-btn" title="Пауза" aria-label="Пауза">⏸</button>
+        <button id="menuBtn" class="icon-btn" title="В меню" aria-label="В меню">✕</button>
+        <button id="fullscreenBtn" class="icon-btn" title="Полный экран" aria-label="Полный экран">⛶</button>
+      </span>
+    </div>
+
+    <div id="statusText" class="hud-status" role="status"></div>
+
+    <div class="hud-abilities">
+      <div id="abilityHint" class="ability-hint hidden"></div>
+      <div class="ability-row">
+        <button class="ability-btn" data-ability="strike" title="Орбитальный удар (1)" aria-label="Орбитальный удар">
+          <span class="ability-glyph">☄</span>
+          <span class="ability-cost">3</span>
+        </button>
+        <button class="ability-btn" data-ability="shield" title="Астральный щит (2)" aria-label="Астральный щит">
+          <span class="ability-glyph">◯</span>
+          <span class="ability-cost">2</span>
+        </button>
+        <button class="ability-btn" data-ability="warp" title="Варп-туннель (3)" aria-label="Варп-туннель">
+          <span class="ability-glyph">∞</span>
+          <span class="ability-cost">4</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="hud-send">
+      <div id="sendRail" class="send-rail">
+        <button class="chip" data-pct="25">25%</button>
+        <button class="chip" data-pct="50">50%</button>
+        <button class="chip" data-pct="75">75%</button>
+        <button class="chip" data-pct="100">100%</button>
+      </div>
+      <span id="sendPct" class="send-current">50%</span>
+    </div>
+  </div>
+
+  <!-- ===== ПАУЗА ===== -->
+  <div id="pauseMenu" class="overlay hidden">
+    <div class="overlay-card panel">
+      <h2 class="overlay-title">Пауза</h2>
+      <p class="overlay-sub">Карты перечерчены, фронты замерли</p>
+      <div class="menu-buttons" style="display:flex">
+        <button id="resumeBtn" class="menu-btn primary" data-action="resume">Продолжить</button>
+        <button id="restartBtn" class="menu-btn" data-action="restart">Заново</button>
+        <button id="toMenuBtn" class="menu-btn back" data-action="toMenu">В меню</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ФИНАЛ ===== -->
+  <div id="gameOverScreen" class="overlay hidden">
+    <div class="overlay-card panel">
+      <h2 id="winnerText" class="overlay-title">Победа!</h2>
+      <div id="gameStats" class="game-stats"></div>
+      <div class="menu-buttons" style="display:flex">
+        <button id="continueBtn" class="menu-btn primary hidden" data-action="continue">Карта кампании</button>
+        <button id="replayBtn" class="menu-btn" data-action="replay">Ещё раз</button>
+        <button id="toMenuFromEndBtn" class="menu-btn back" data-action="toMenu">В меню</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== МЕНЮ ===== -->
+  <div id="menu">
+
+    <!-- Главное меню -->
+    <div id="mainMenu" class="menu-screen active">
+      <div class="logo">
+        <h1 class="logo-title">ГАЛАКТИЧЕСКАЯ<br>ОСАДА <span class="logo-num">III</span></h1>
+        <p class="logo-sub">Звёздный атлас</p>
+      </div>
+      <div class="menu-buttons">
+        <button class="menu-btn primary" data-nav="campaign">▸ Кампания</button>
+        <button class="menu-btn primary" data-nav="skirmish">▸ Быстрая битва</button>
+        <button class="menu-btn" data-nav="settings">⚙ Настройки</button>
+        <button class="menu-btn" data-nav="help">? Как играть</button>
+      </div>
+      <div class="menu-footer">
+        <button id="menuFullscreenBtn" class="icon-btn" title="Полноэкранный режим" aria-label="Полный экран">⛶</button>
+        <span class="version">v3.0</span>
+      </div>
+    </div>
+
+    <!-- Кампания -->
+    <div id="campaign" class="menu-screen">
+      <h2 class="screen-title">Карта кампании</h2>
+      <div class="campaign-topbar">
+        <span id="dustCounter" class="dust-chip" title="Звёздная пыль">✦ <span id="dustAmount">0</span></span>
+        <button id="upgradesBtn" class="menu-btn small" data-action="toggleUpgrades">🎨 Апгрейды</button>
+      </div>
+      <div id="campaignMap" class="campaign-map"></div>
+      <div id="upgradePanel" class="panel upgrade-panel hidden">
+        <h3 class="panel-title">Мастерская красок</h3>
+        <div id="upgradeList" class="upgrade-list"></div>
+        <button class="menu-btn small back" data-action="closeUpgrades">Закрыть</button>
+      </div>
+      <div class="menu-buttons">
+        <button class="menu-btn back" data-nav="mainMenu">← Назад</button>
+      </div>
+    </div>
+
+    <!-- Брифинг -->
+    <div id="briefing" class="menu-screen">
+      <div id="briefingBody" class="briefing-body"></div>
+      <div class="menu-buttons">
+        <button class="menu-btn back" data-nav="campaign">← К карте</button>
+      </div>
+    </div>
+
+    <!-- Быстрая битва -->
+    <div id="skirmish" class="menu-screen">
+      <h2 class="screen-title">Быстрая битва</h2>
+      <p class="screen-sub">Чистый лист: одна система, выбранный накал красок.</p>
+      <div id="difficultyChoice" class="menu-buttons">
+        <button class="menu-btn" data-difficulty="easy">🌿 Легко · 1 ИИ</button>
+        <button class="menu-btn" data-difficulty="medium">🔥 Средне · 2 ИИ</button>
+        <button class="menu-btn" data-difficulty="hard">☄ Сложно · 3 ИИ</button>
+      </div>
+      <div class="menu-buttons">
+        <button class="menu-btn back" data-nav="mainMenu">← Назад</button>
+      </div>
+    </div>
+
+    <!-- Настройки -->
+    <div id="settings" class="menu-screen">
+      <h2 class="screen-title">Настройки</h2>
+      <div class="settings-list">
+        <div class="settings-row">
+          <span class="settings-label">Качество графики</span>
+          <select id="qualitySelect" class="settings-select">
+            <option value="high">Высокое</option>
+            <option value="medium">Среднее</option>
+            <option value="low">Низкое</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Звук</span>
+          <span class="settings-note">(скоро — пока тихо, как акварель)</span>
+        </div>
+        <div class="settings-row">
+          <label class="settings-label checkbox" for="reducedMotionToggle">
+            <input type="checkbox" id="reducedMotionToggle" />
+            <span>Уменьшенная анимация</span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <label class="settings-label checkbox" for="particlesToggle">
+            <input type="checkbox" id="particlesToggle" checked />
+            <span>Частицы и брызги</span>
+          </label>
+        </div>
+      </div>
+      <div class="menu-buttons">
+        <button class="menu-btn back" data-nav="mainMenu">← Назад</button>
+      </div>
+    </div>
+
+    <!-- Как играть -->
+    <div id="help" class="menu-screen help-screen">
+      <h2 class="screen-title">Как играть</h2>
+      <div id="helpBody" class="help-body">
+        <!-- Контент строится menu.js из CONFIG: правила, типы планет, способности, события -->
+      </div>
+      <div class="menu-buttons">
+        <button class="menu-btn back" data-nav="mainMenu">← Назад</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Порядок загрузки строго по DESIGN.md -->
+  <script src="js/config.js?v=202610082150"></script>
+  <script src="js/utils.js?v=202610082150"></script>
+  <script src="js/campaign.js?v=202610082150"></script>
+  <script src="js/game.js?v=202610091826"></script>
+  <script src="js/ai.js?v=202610082150"></script>
+  <script src="js/renderer.js?v=202610082150"></script>
+  <script src="js/menu.js?v=202610082150"></script>
+  <script src="js/main.js?v=202610082150"></script>
+</body>
+</html>
